@@ -263,7 +263,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			cairo_surface_t *surface = cairo_win32_surface_create(hdc);
             cairo_t *cr = cairo_create(surface);
 
-			cairo_surface_t *shell = cairo_image_surface_create_from_png("smatch-shell.png");
+			cairo_surface_t *shell = cairo_image_surface_create_from_png("../res/smatch-shell.png");
 
 			cairo_set_source_surface(cr, shell, 0, 0);
 			cairo_paint(cr);
