@@ -7,6 +7,7 @@
 #include <cairo.h>
 #include <cairo-win32.h>
 
+#include "emulator.h"
 #include "native_graphic.h"
 #include "emu-shell.h"
 
@@ -264,6 +265,9 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		OnWindowCreate(hWnd);
 
 		native_graphic_init();
+
+		emulator_init();
+
 		break;
 
     case WM_PAINT:
@@ -314,8 +318,11 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		break;
 
 	case WM_DESTROY:
+		emulator_fini();
+
 		native_graphic_fini();
-        PostQuitMessage(0);
+        
+		PostQuitMessage(0);
         break;
 
     default:

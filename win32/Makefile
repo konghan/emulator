@@ -11,7 +11,7 @@ LIBS = -lcairo -lpng -lz $(WIN32LIBS)
 
 TARGET = emu.exe
 
-emu-objs = emu-shell.o native_graphic.o
+emu-objs = emu-shell.o native_graphic.o emulator.o
 win-objs = win32_native.o
 
 vpath %.c ./..
