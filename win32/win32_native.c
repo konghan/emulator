@@ -40,11 +40,27 @@ static HWND	__gs_logger_win = NULL;
 static void SetLogger(HWND hEdit){
 	__gs_logger_win = hEdit;
 }
+
 static HWND GetLogger(){
 	return __gs_logger_win;
 }
 
-static HWND	gs_hWnd;
+static HWND	gs_hWnd = NULL;
+
+static void AppendText(HWND hWnd, LPCTSTR lpstrText);
+
+int logger_output(const char *log, int size){
+	HWND	logWnd = GetLogger();
+
+	if(logWnd != NULL){
+		AppendText(GetLogger(), log);
+		AppendText(GetLogger(), "\r\n");
+
+		return size;
+	}else{
+		return -1;
+	}
+}
 
 // Forward declarations of functions included in this code module:
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -333,14 +349,14 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-int native_flush_device(int x, int y, int width, int height){
+int native_flush_device(){
 	RECT			rc;
 	emu_shell_t		*es = emu_shell_getinfo(0);
 
-	rc.top = y + es->es_screen_y;
-	rc.left = x + es->es_screen_x;
-	rc.bottom = rc.top + height;
-	rc.right  = rc.left + width;
+	rc.top = es->es_screen_y;
+	rc.left = es->es_screen_x;
+	rc.bottom = rc.top + es->es_screen_height;
+	rc.right  = rc.left + es->es_screen_width;
 	
 	InvalidateRect(gs_hWnd, &rc, FALSE);
 

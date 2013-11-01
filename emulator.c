@@ -5,13 +5,14 @@
 
 #include "emulator.h"
 
-int emulator_init(){
-	return 0;
-}
+#include "swapi.h"
 
+
+int emulator_init(){	
+	return swapi_init();
+}
 
 int emulator_fini(){
-	return 0;
+	return swapi_fini();
 }
-
 

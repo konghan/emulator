@@ -98,8 +98,6 @@ cairo_surface_t *native_graphic_get(){
 	return ng->ng_surface;
 }
 
-extern int native_flush_device(int x, int y, int width, int height);
-
 int native_graphic_draw(cairo_surface_t *surface, int x, int y, int width, int height){
 	native_graphic_t *ng = get_ngctx();
 
@@ -109,8 +107,6 @@ int native_graphic_draw(cairo_surface_t *surface, int x, int y, int width, int h
 	cairo_paint(ng->ng_context);
 	
 	swapi_spin_unlock(&ng->ng_lock);
-
-	native_flush_device(x, y, width, height);
 
 	return 0;
 }

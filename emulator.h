@@ -15,6 +15,8 @@ extern "C" {
 int emulator_init();
 int emualtor_fini();
 
+int logger_output(const char *log, int size);
+
 #ifdef __cplusplus
 }
 #endif
