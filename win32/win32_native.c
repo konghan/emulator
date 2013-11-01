@@ -53,8 +53,8 @@ int logger_output(const char *log, int size){
 	HWND	logWnd = GetLogger();
 
 	if(logWnd != NULL){
-		AppendText(GetLogger(), log);
-		AppendText(GetLogger(), "\r\n");
+		AppendText(logWnd, log);
+		AppendText(logWnd, "\r\n");
 
 		return size;
 	}else{
@@ -148,10 +148,10 @@ static HWND CreateButton(HWND hWnd, LPTSTR lpText, RECT rc, int id){
 static void AppendText(HWND hWnd, LPCTSTR lpstrText){
 	DWORD l,r;
 	
-	SendMessage(hWnd, EM_GETSEL,(WPARAM)&l,(LPARAM)&r);
+//	SendMessage(hWnd, EM_GETSEL,(WPARAM)&l,(LPARAM)&r);
 	SendMessage(hWnd, EM_SETSEL, -1, -1);
 	SendMessage(hWnd, EM_REPLACESEL, 0, (LPARAM)lpstrText);
-	SendMessage(hWnd, EM_SETSEL,l,r);
+//	SendMessage(hWnd, EM_SETSEL,l,r);
 }
 
 
@@ -167,7 +167,7 @@ static void OnWindowCreate(HWND hWnd){
 			hWnd, NULL, NULL, NULL);
 	if(hEdit != NULL){
 		SetLogger(hEdit);
-		SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)_T("..........emulator.......\r\n"));
+		AppendText(hEdit,(LPARAM)_T("..........emulator.......\r\n"));
 	}
 
 	// create buttons
