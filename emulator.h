@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 int emulator_init();
-int emualtor_fini();
+int emulator_fini();
 
 int logger_output(const char *log, int size);
 

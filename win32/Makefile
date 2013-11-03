@@ -16,8 +16,11 @@ LIBS = -lswapi -lcairo -lpng -lz $(WIN32LIBS)
 
 TARGET = emu.exe
 
-emu-objs = emu-shell.o native_graphic.o native_logger.o emulator.o
-win-objs = win32_native.o
+emu-objs = emu-keyboard.o emu-shell.o						\
+		   native_graphic.o native_logger.o					\
+		   emulator.o
+
+win-objs = natv_time_win32.o win32_native.o
 
 vpath %.c ./..
 

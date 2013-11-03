@@ -10,6 +10,7 @@
 #include "emulator.h"
 #include "native_graphic.h"
 #include "emu-shell.h"
+#include "emu-keyboard.h"
 
 #define EMULATOR_BUTTON_UP			1001
 #define EMULATOR_BUTTON_DOWN		1002
@@ -54,8 +55,6 @@ int logger_output(const char *log, int size){
 
 	if(logWnd != NULL){
 		AppendText(logWnd, log);
-		AppendText(logWnd, "\r\n");
-
 		return size;
 	}else{
 		return -1;
@@ -146,12 +145,8 @@ static HWND CreateButton(HWND hWnd, LPTSTR lpText, RECT rc, int id){
 }
 
 static void AppendText(HWND hWnd, LPCTSTR lpstrText){
-	DWORD l,r;
-	
-//	SendMessage(hWnd, EM_GETSEL,(WPARAM)&l,(LPARAM)&r);
 	SendMessage(hWnd, EM_SETSEL, -1, -1);
 	SendMessage(hWnd, EM_REPLACESEL, 0, (LPARAM)lpstrText);
-//	SendMessage(hWnd, EM_SETSEL,l,r);
 }
 
 
@@ -167,7 +162,7 @@ static void OnWindowCreate(HWND hWnd){
 			hWnd, NULL, NULL, NULL);
 	if(hEdit != NULL){
 		SetLogger(hEdit);
-		AppendText(hEdit,(LPARAM)_T("..........emulator.......\r\n"));
+		AppendText(hEdit, _T("..........emulator.......\r\n"));
 	}
 
 	// create buttons
@@ -248,18 +243,59 @@ static void ClientResize(HWND hWnd, int nWidth, int nHeight)
 
 static void OnCommand(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 	WORD	id, opcode;
+	int		key;
 
 	id = LOWORD(wParam);
 	opcode = HIWORD(wParam);
-	HWND	log;
 
 	switch(opcode){
 	case BN_CLICKED:
-		log = GetLogger();
-		if(log != NULL){
-			id = 0;
-			AppendText(log, _T("EMU : key clicked\r\n"));
+		switch(id){
+		case EMULATOR_BUTTON_ENTER:
+			key = kNATV_KEYDRV_ENTER;
+			break;
+
+		case EMULATOR_BUTTON_ESCAPE:
+			key = kNATV_KEYDRV_ESCAPE;
+			break;
+
+		case EMULATOR_BUTTON_UP:
+			key = kNATV_KEYDRV_UP;
+			break;
+	
+		case EMULATOR_BUTTON_DOWN:
+			key = kNATV_KEYDRV_DOWN;
+			break;
+
+		case EMULATOR_BUTTON_ENTERUP:
+			key = kNATV_KEYDRV_ENTERUP;
+			break;
+	
+		case EMULATOR_BUTTON_ENTERDOWN:
+			key = kNATV_KEYDRV_ENTERDOWN;
+			break;
+	
+		case EMULATOR_BUTTON_ESCAPEUP:
+			key = kNATV_KEYDRV_ESCAPEUP;
+			break;
+	
+		case EMULATOR_BUTTON_ESCAPEDOWN:
+			key = kNATV_KEYDRV_ESCAPEDOWN;
+			break;
+
+		case EMULATOR_BUTTON_CALL:
+			key = kNATV_KEYDRV_CALL;
+			break;
+	
+		case EMULATOR_BUTTON_MESSAGE:
+			key = kNATV_KEYDRV_MESSAGE;
+			break;
+
+		default:
+			return ;
 		}
+
+		emu_keyboard_post(key);
 		break;
 
 	default:
