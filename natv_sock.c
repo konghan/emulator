@@ -9,88 +9,111 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 
+#define kNATV_SOCK_ADDR_SIZE			20
 
-typedef struct swapi_logger{
-    int		    log_init;
-    SOCKET		log_sock;
+#define kNATV_SOCK_SEGMENT				"natv-sock"
+#define kNATV_SOCK_ADDR_KEY				"server-ip"
+#define kNATV_SOCK_ADDR_PORT			"server-port"
 
-    struct sockaddr_in log_serv;
-}swapi_logger_t;
+typedef struct natv_sock{
+    int					ns_init;
+	int					ns_status;
 
-struct swapi_logger_ltos {
-    int	    ll_level;
-    char    *ll_string;
-};
+	// should be mutex
+	swapi_spinlock_t	ns_lock;
+    SOCKET				ns_sock;
 
-static struct swapi_logger_ltos __log_ltos[] = {
-    {SWAPI_LOGGER_FATAL,  "FATAL"},
-    {SWAPI_LOGGER_ERROR,  "ERROR"},
-    {SWAPI_LOGGER_WARN,   " WORN"},
-    {SWAPI_LOGGER_INFO,   " INFO"},
-    {SWAPI_LOGGER_DEBUG,  "DEBUG"},
-    {SWAPI_LOGGER_TRACE,  "TRACE"},
-    {SWAPI_LOGGER_UNKOWN, "UNKOWN"},
-};
-static swapi_logger_t	    __log_data;
+	swapi_thread_t		ns_thread;
 
-static char *log_ltos(int level){
-    if((level > SWAPI_LOGGER_TRACE)||(level < 0)){
-		return (__log_ltos[SWAPI_LOGGER_UNKOWN]).ll_string;
-    }
+    struct sockaddr_in	ns_serv;
+}natv_sock_t;
 
-    return (__log_ltos[level]).ll_string;
+static natv_sock_t	    __gs_sock = {};
+
+static inline natv_sock_t *get_sock(){
+	return &__gs_sock;
 }
 
-int swapi_logger_print(int level, char *fmt, ...){
-    swapi_logger_t	*log = &__log_data;
-    char	buf[SWAPI_LOGGER_MAX_BUF];
-    int		size = 0;
-    va_list	args;
+static int natv_sock_routine(void *p){
+	natv_sock_t		*sock = (natv_sock_t *)p;
 
-    if(!log->log_init){
-		return -1;
+	ASSERT(sock != NULL);
+
+	while(1){
+		// FIXME: check gprs driver
+
+		if(connect(sock->ns_sock, (struct sockaddr *)&sock->ns_serv,
+			sizeof(struct sockaddr_in)) < 0){
+			if(!sock->ns_status){
+				break;
+			}
+
+			swapi_log_warn("connecting to server fail, try again ...\n");
+			// wait 3 seconds
+			sleep(3);
+			continue;
+		}
+		sock->ns_init = 1;
+
+		// read data & dispatch to loop
+		while(sock->ns_status){
+		}
     }
 
-    size = _snprintf(buf, SWAPI_LOGGER_MAX_BUF, "%s:", log_ltos(level));
 
-    va_start(args, fmt);
-    size += _vsnprintf(buf+size, SWAPI_LOGGER_MAX_BUF-size, fmt, args);
-    va_end(args);
-
-    return send(log->log_sock, buf, size, 0);
+	return 0;
 }
 
-int swapi_log_module_init(){
-    swapi_logger_t	*log = &__log_data;
-
-    log->log_sock = socket(PF_INET, SOCK_STREAM, 0);
-		if(log->log_sock < 0){
-		return -1;
-    }
-
-    log->log_serv.sin_family = AF_INET;
-    log->log_serv.sin_addr.s_addr = inet_addr("127.0.0.1");
-    log->log_serv.sin_port = htons(4040);
-
-    if(connect(log->log_sock, (struct sockaddr *)&log->log_serv,
-		sizeof(struct sockaddr_in)) < 0){
-		closesocket(log->log_sock);
-		return -1;
-    }
-
-    log->log_init = 1;
-
-    return 0;
+int natv_sock_send(struct swap_id *sid, struct swap_uid, size_t size, void *data){
 }
 
-int swapi_log_module_fini(){
-    swapi_logger_t	*log = &__log_data;
+int natv_sock_send_iov(struct swap_id *sid, struct swap_uid, int num, struct swap_iov *ios){
+}
 
-    if(log->log_init){
-		log->log_init = 0;
-		closesocket(log->log_sock);
+int natv_sock_module_init(){
+    natv_sock_t		*sock = get_sock();
+	char			serv[kNATV_SOCK_ADDR_SIZE];
+	int				vsize = kNATV_SOCK_ADDR_SIZE;
+	int				type, port;
+	
+    sock->ns_serv.sin_family = AF_INET;
+
+	if(natv_cfgsrv_get(kNATV_SOCK_SEGMENT, kNATV_SOCK_ADDR_KEY,
+				serv, &vsize, &type) != 0){
+		swapi_log_warn("cfgsrv get sock configuration fail!\n");
+		return -1;
+	}
+    sock->ns_serv.sin_addr.s_addr = inet_addr(serv);
+
+	vsize =  sizeof(int);
+	if(natv_cfgsrv_get(kNATV_SOCK_SEGMENT, kNATV_SOCK_ADDR_PORT,
+				&port, &vsize, &type) != 0){
+		swapi_log_warn("cfgsrv get sock configuration fail!\n");
+		return -1;
+	}
+    natv->ns_serv.sin_port = htons(port);
+    
+	sock->ns_sock = socket(PF_INET, SOCK_STREAM, 0);
+	if(sock->ns_sock < 0){
+		swapi_log_warn("create sock client fail!\n");
+		return -1;
     }
+    
+	swapi_spin_init(&sock->ns_lock);
 
+	sock->ns_status = 1;
+
+	if(swapi_thread_create(&sock->ns_thread, natv_sock_routine, sock) != 0){
+		swapi_log_warn("create sock thread fail!\n");
+		closesocket(sock->ns_sock);
+		return -1;
+	}
+	
+	return 0;
+}
+
+int natv_sock_module_fini(){
+	// FIXME:
     return 0;
 }
 

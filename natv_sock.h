@@ -6,10 +6,13 @@
 #ifndef __NATV_SOCK_H__
 #define __NATV_SOCK_H__
 
-struct swap_id;
+struct swap_id;		// smart watch app id
+struct swap_uid;	// user id
 
-int natv_sock_send(struct swap_id *sid, size_t size, void *data);
-int natv_sock_send_iov(struct swap_id *sid, int num, struct iov *ios);
+struct swap_iov;	// smart watch iov
+
+int natv_sock_send(struct swap_id *sid, struct swap_uid, size_t size, void *data);
+int natv_sock_send_iov(struct swap_id *sid, struct swap_uid, int num, struct swap_iov *ios);
 
 int natv_sock_module_init();
 int natv_sock_module_fini();
