@@ -3,13 +3,14 @@
  * Distributed under the BSD license, see the LICENSE file.
  */
 
-#include "native_graphic.h"
+#include "natv_surface.h"
 
 #include "emu-shell.h"
 
+#include "swapi_surface.h"
 #include "swapi_sys_thread.h"
 
-typedef struct native_graphic{
+typedef struct natv_surface{
 	swapi_spinlock_t	ng_lock;
 	int					ng_init;
 	
@@ -17,46 +18,47 @@ typedef struct native_graphic{
 	cairo_t				*ng_context;
 	int					ng_width;
 	int					ng_height;
-}native_graphic_t;
+}natv_surface_t;
 
-static native_graphic_t __gs_native_graphic = {};
+static natv_surface_t __gs_natv_surface = {};
 
-static inline native_graphic_t *get_ngctx(){
-	return &__gs_native_graphic;
+static inline natv_surface_t *get_ngctx(){
+	return &__gs_natv_surface;
 }
 
-int native_graphic_getinfo(native_graphic_info_t *info){
+int natv_surface_getinfo(natv_surface_info_t *info){
 	emu_shell_t		*es;
 
 	ASSERT(info != NULL);
 
 	es = emu_shell_getinfo(0);
 
-	info->ngi_width		= es->es_screen_width;
-	info->ngi_height	= es->es_screen_height;
+	info->nsi_width		= es->es_screen_width;
+	info->nsi_height	= es->es_screen_height;
 
 	// CAIRO_FORMAT_ARGB32, CAIRO_FORMAT_A8, CAIRO_FORMAT_RGB16_565
 	// CAIRO_FORMAT_RGB30
-	info->ngi_rgbtype = CAIRO_FORMAT_RGB24;
+	info->nsi_type = CAIRO_FORMAT_RGB24;
 
 	return 0;
 }
 
-static void native_graphic_drawlogo(cairo_t *cr, cairo_surface_t *surface){
+static void natv_surface_drawlogo(cairo_t *cr, cairo_surface_t *surface){
 
-	cairo_set_source_rgb(cr, 128, 128, 128);
+	cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 	cairo_rectangle(cr, 0, 0, 128, 128);
 	cairo_fill(cr);
 }
 
-int native_graphic_init(){
-	native_graphic_t		*ng = get_ngctx();
-	native_graphic_info_t	info;
 
-	native_graphic_getinfo(&info);
+int natv_surface_module_init(){
+	natv_surface_t		*ng = get_ngctx();
+	natv_surface_info_t	info;
+
+	natv_surface_getinfo(&info);
 	
-	ng->ng_surface = cairo_image_surface_create(info.ngi_rgbtype,
-			info.ngi_width, info.ngi_height);
+	ng->ng_surface = cairo_image_surface_create(info.nsi_type,
+			info.nsi_width, info.nsi_height);
 
 	if(ng->ng_surface == NULL){
 		return -1;
@@ -68,7 +70,7 @@ int native_graphic_init(){
 		return -1;
 	}
 
-	native_graphic_drawlogo(ng->ng_context, ng->ng_surface);
+	natv_surface_drawlogo(ng->ng_context, ng->ng_surface);
 
 	swapi_spin_init(&ng->ng_lock);
 	ng->ng_init = 1;
@@ -76,8 +78,8 @@ int native_graphic_init(){
 	return 0;
 }
 
-int native_graphic_fini(){
-	native_graphic_t *ng = get_ngctx();
+int natv_surface_module_fini(){
+	natv_surface_t *ng = get_ngctx();
 
 	if(ng->ng_init == 0){
 		return -1;
@@ -92,18 +94,12 @@ int native_graphic_fini(){
 	return 0;
 }
 
-cairo_surface_t *native_graphic_get(){
-	native_graphic_t *ng = get_ngctx();
-
-	return ng->ng_surface;
-}
-
-int native_graphic_draw(cairo_surface_t *surface, int x, int y, int width, int height){
-	native_graphic_t *ng = get_ngctx();
+int natv_surface_draw(swapi_surface_t *sf, int x, int y, int width, int height){
+	natv_surface_t *ng = get_ngctx();
 
 	swapi_spin_lock(&ng->ng_lock);
 
-	cairo_set_source_surface(ng->ng_context, surface, x, y);
+	cairo_set_source_surface(ng->ng_context, sf->ss_sf, x, y);
 	cairo_paint(ng->ng_context);
 	
 	swapi_spin_unlock(&ng->ng_lock);
@@ -111,3 +107,7 @@ int native_graphic_draw(cairo_surface_t *surface, int x, int y, int width, int h
 	return 0;
 }
 
+cairo_surface_t *_natv_surface_get(){
+	natv_surface_t *ng = get_ngctx();
+	return ng->ng_surface;
+}

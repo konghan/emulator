@@ -5,19 +5,19 @@
 
 #include "emulator.h"
 
-#include "native_logger.h"
+#include "natv_logger.h"
 
 #include "swapi.h"
 
 
 int emulator_init(){
-	native_logger_init();
+	natv_logger_init();
 
 	return swapi_init();
 }
 
 int emulator_fini(){
-	native_logger_fini();
+	natv_logger_fini();
 
 	return swapi_fini();
 }

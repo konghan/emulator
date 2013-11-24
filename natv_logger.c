@@ -3,7 +3,7 @@
  * Distributed under the BSD license, see the LICENSE file.
  */
 
-#include "native_logger.h"
+#include "natv_logger.h"
 
 #include "swapi_queue.h"
 #include "swapi_sys_thread.h"
@@ -11,38 +11,38 @@
 
 #include "emulator.h"
 
-#define kNATIVE_LOGGER_LOGSIZE		128
-#define kNATIVE_LOGGER_PENDINGS		32
+#define knatv_logger_LOGSIZE		128
+#define knatv_logger_PENDINGS		32
 
-typedef struct native_logger{
+typedef struct natv_logger{
 	int					nl_init;
 
 	swapi_queue_t		*nl_queue;
 	swapi_thread_t		nl_thread;
-}native_logger_t;
+}natv_logger_t;
 
-static native_logger_t __gs_log = {};
+static natv_logger_t __gs_log = {};
 
-static inline native_logger_t *get_log(){
+static inline natv_logger_t *get_log(){
 	return &__gs_log;
 }
 
-int native_logger_output(const char *log, int size){
-	native_logger_t		*nl =  get_log();
+int natv_logger_output(const char *log, int size){
+	natv_logger_t		*nl =  get_log();
 	swapi_message_t		msg;
 
 	if(nl->nl_init == 0){
 		return -1;
 	}
 
-	msg.sm_ptr = malloc(kNATIVE_LOGGER_LOGSIZE);
+	msg.sm_ptr = malloc(knatv_logger_LOGSIZE);
 	if(msg.sm_ptr == NULL){
 		return -1;
 	}
-	memset(msg.sm_ptr, 0, kNATIVE_LOGGER_LOGSIZE);
+	memset(msg.sm_ptr, 0, knatv_logger_LOGSIZE);
 
-	if(size >= (kNATIVE_LOGGER_LOGSIZE-1))
-		size = kNATIVE_LOGGER_LOGSIZE - 1;
+	if(size >= (knatv_logger_LOGSIZE-1))
+		size = knatv_logger_LOGSIZE - 1;
 
 	strncpy((char *)msg.sm_ptr, log, size);
 	msg.sm_size = size;
@@ -51,7 +51,7 @@ int native_logger_output(const char *log, int size){
 }
 
 static int logger_routine(void *p){
-	native_logger_t		*nl = (native_logger_t *)p;
+	natv_logger_t		*nl = (natv_logger_t *)p;
 	swapi_message_t		msg;
 	
 	while(1){
@@ -65,10 +65,10 @@ static int logger_routine(void *p){
 	return 0;
 }
 
-int native_logger_init(){
-	native_logger_t *nl = get_log();
+int natv_logger_init(){
+	natv_logger_t *nl = get_log();
 
-	if(swapi_queue_create(sizeof(swapi_message_t), kNATIVE_LOGGER_PENDINGS,
+	if(swapi_queue_create(sizeof(swapi_message_t), knatv_logger_PENDINGS,
 				&nl->nl_queue) != 0){
 		return -1;
 	}
@@ -82,7 +82,7 @@ int native_logger_init(){
 	return 0;
 }
 
-int native_logger_fini(){
+int natv_logger_fini(){
 
 	// FIXME: destroy logger
 

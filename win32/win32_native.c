@@ -8,7 +8,7 @@
 #include <cairo-win32.h>
 
 #include "emulator.h"
-#include "native_graphic.h"
+#include "natv_surface.h"
 #include "emu-shell.h"
 #include "emu-keyboard.h"
 
@@ -47,6 +47,8 @@ static HWND GetLogger(){
 }
 
 static HWND	gs_hWnd = NULL;
+
+extern cairo_surface_t *_natv_surface_get();
 
 static void AppendText(HWND hWnd, LPCTSTR lpstrText);
 
@@ -316,7 +318,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 		OnWindowCreate(hWnd);
 
-		native_graphic_init();
+		natv_surface_module_init();
 
 		emulator_init();
 
@@ -333,7 +335,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		
 			// draw watch content
 		{
-			cairo_surface_t *ngsurface = native_graphic_get();
+			cairo_surface_t *ngsurface = _natv_surface_get();
 			cairo_set_source_surface(cr, ngsurface, es->es_screen_x, es->es_screen_y);
 			cairo_paint(cr);
 		}
@@ -372,7 +374,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_DESTROY:
 		emulator_fini();
 
-		native_graphic_fini();
+		natv_surface_module_fini();
         
 		PostQuitMessage(0);
         break;
@@ -385,7 +387,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-int native_flush_device(){
+int natv_surface_renter_to_device(){
 	RECT			rc;
 	emu_shell_t		*es = emu_shell_getinfo(0);
 
