@@ -38,21 +38,21 @@ void emu_shell_draw(cairo_t *cr, cairo_surface_t *surface, int w, int h){
 	double degrees = M_PI / 180.0;
 
 	// draw backgroud
-	cairo_set_source_rgb(cr, 128, 128, 128);
+	cairo_set_source_rgb(cr, 1, 1, 1);
 	cairo_rectangle(cr, 0, 0, w, h);
 	cairo_fill(cr);
 	
 	// draw shell
+	cairo_set_source_rgb (cr, 0, 0, 0);
+	cairo_set_line_width (cr, 10.0);
+
 	cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
 	cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
 	cairo_arc (cr, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
 	cairo_arc (cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
-	cairo_close_path (cr);
 
-	cairo_set_source_rgb (cr, 0.5, 0.5, 1);
+	cairo_close_path (cr);
 	cairo_fill_preserve (cr);
-	cairo_set_source_rgba (cr, 0.5, 0, 0, 0.5);
-	cairo_set_line_width (cr, 10.0);
 	cairo_stroke (cr);
 }
 

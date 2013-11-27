@@ -44,9 +44,24 @@ int natv_surface_getinfo(natv_surface_info_t *info){
 }
 
 static void natv_surface_drawlogo(cairo_t *cr, cairo_surface_t *surface){
-
-	cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+	cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1);
 	cairo_rectangle(cr, 0, 0, 128, 128);
+	cairo_fill(cr);
+
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.4);
+	cairo_rectangle(cr, 0, 0, 32, 32);
+	cairo_fill(cr);
+
+	cairo_set_source_rgba(cr, 1, 0, 0, 0.4);
+	cairo_rectangle(cr, 32, 32, 32, 32);
+	cairo_fill(cr);
+
+	cairo_set_source_rgba(cr, 0, 1, 0, 0.4);
+	cairo_rectangle(cr, 64, 64, 32, 32);
+	cairo_fill(cr);
+
+	cairo_set_source_rgba(cr, 0, 0, 1, 0.4);
+	cairo_rectangle(cr, 96, 96, 32, 32);
 	cairo_fill(cr);
 }
 
@@ -103,6 +118,8 @@ int natv_surface_draw(swapi_surface_t *sf, int x, int y, int width, int height){
 	cairo_paint(ng->ng_context);
 	
 	swapi_spin_unlock(&ng->ng_lock);
+	
+	natv_surface_renter_to_device();
 
 	return 0;
 }
