@@ -6,7 +6,7 @@
 #ifndef __EMU_SHELL_H__
 #define __EMU_SHELL_H__
 
-#include <cairo.h>
+#include <cairo/cairo.h>
 
 #ifdef __cplusplus
 extern "C" {

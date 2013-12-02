@@ -6,7 +6,7 @@
 #ifndef __EMULATOR_H__
 #define __EMULATOR_H__
 
-#include <cairo.h>
+#include <cairo/cairo.h>
 
 #ifdef __cplusplus
 extern "C" {

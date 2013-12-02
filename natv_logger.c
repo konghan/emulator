@@ -16,6 +16,7 @@
 
 typedef struct natv_logger{
 	int					nl_init;
+	FILE				*nl_fd;
 
 	swapi_queue_t		*nl_queue;
 	swapi_thread_t		nl_thread;
@@ -58,6 +59,12 @@ static int logger_routine(void *p){
 		swapi_queue_wait(nl->nl_queue, &msg);
 
 		logger_output((char*)msg.sm_ptr, msg.sm_size);
+		if(nl->nl_fd != NULL){
+			fwrite((void*)msg.sm_ptr, msg.sm_size, 1, nl->nl_fd);
+			fflush(nl->nl_fd);
+
+			printf("%s\n", (char*)msg.sm_ptr);
+		}
 
 		free(msg.sm_ptr);
 	}
@@ -76,6 +83,8 @@ int natv_logger_init(){
 	if(swapi_thread_create(&nl->nl_thread, logger_routine, nl) != 0){
 		return -1;
 	}
+
+	nl->nl_fd = fopen("natv.log", "w");
 	
 	nl->nl_init = 1;
 

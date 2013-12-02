@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tchar.h>
-#include <cairo.h>
-#include <cairo-win32.h>
+#include <cairo/cairo.h>
+#include <cairo/cairo-win32.h>
 
 #include "emulator.h"
 #include "natv_surface.h"

@@ -1,18 +1,16 @@
 
 CC = i686-pc-mingw32-gcc
 
-INCLUDE = -I/usr/local/include				\
-		  -I/usr/local/include/cairo		\
-		  -I../../swapi/win32				\
+INCLUDE = -I../../swapi/win32				\
 		  -I../../swapi/include				\
 		  -I..
 
 CFLAGS = -mwindows -Wall -g -O2 $(INCLUDE)
 
-LDFLAGS = -static -L/usr/local/lib -L../libs
+LDFLAGS = -static -L../libs
 
-WIN32LIBS = -lgdi32
-LIBS = -lswapi -lcairo -lpng -lz $(WIN32LIBS)
+WIN32LIBS = -lgdi32 -lmsimg32
+LIBS = -lswapi -lcairo -lpixman -lfreetype -lpng -lz $(WIN32LIBS)
 
 TARGET = emu.exe
 
