@@ -7,7 +7,6 @@
 
 #include "emu-shell.h"
 
-#include "swapi_surface.h"
 #include "swapi_sys_thread.h"
 
 typedef struct natv_surface{
@@ -109,12 +108,12 @@ int natv_surface_module_fini(){
 	return 0;
 }
 
-int natv_surface_draw(swapi_surface_t *sf, int x, int y, int width, int height){
+int natv_surface_draw(cairo_surface_t *sf, int x, int y, int width, int height){
 	natv_surface_t *ng = get_ngctx();
 
 	swapi_spin_lock(&ng->ng_lock);
 
-	cairo_set_source_surface(ng->ng_context, sf->ss_sf, x, y);
+	cairo_set_source_surface(ng->ng_context, sf, x, y);
 	cairo_paint(ng->ng_context);
 	
 	swapi_spin_unlock(&ng->ng_lock);
